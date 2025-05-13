@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Microfinance</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <div id="app-container">
+        <header>
+            <h1>Smart Microfinance</h1>
+            <div class="theme-switcher">
+                <span class="material-icons">brightness_4</span>
+                <label class="switch">
+                    <input type="checkbox" id="themeToggle">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div id="auth-links">
+                 <a href="#" id="logout-link" style="display:none;">Logout (<span id="currentUserEmail"></span>)</a>
+            </div>
+        </header>
+
+        <main>
+            <!-- Login View -->
+            <section id="login-view" class="view">
+                <h2>Login</h2>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-email">Email</label>
+                        <input type="email" id="login-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" required>
+                    </div>
+                    <button type="submit" class="btn">Login</button>
+                    <p>Don't have an account? <a href="#" id="show-signup-link">Sign Up</a></p>
+                    <p><a href="#" id="show-admin-login-link">Admin Login</a></p>
+                </form>
+            </section>
+
+            <!-- Admin Login View -->
+            <section id="admin-login-view" class="view" style="display:none;">
+                <h2>Admin Login</h2>
+                <form id="admin-login-form">
+                    <div class="form-group">
+                        <label for="admin-login-email">Admin Email</label>
+                        <input type="email" id="admin-login-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-login-password">Password</label>
+                        <input type="password" id="admin-login-password" required>
+                    </div>
+                    <button type="submit" class="btn">Admin Login</button>
+                    <p><a href="#" id="show-user-login-link-from-admin">User Login</a></p>
+                </form>
+            </section>
+
+            <!-- Signup View -->
+            <section id="signup-view" class="view" style="display:none;">
+                <h2>Sign Up</h2>
+                <form id="signup-form">
+                    <div class="form-group">
+                        <label for="signup-email">Email</label>
+                        <input type="email" id="signup-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" required>
+                        <small>Password must be at least 8 characters.</small>
+                    </div>
+                     <div class="form-group">
+                        <label for="signup-confirm-password">Confirm Password</label>
+                        <input type="password" id="signup-confirm-password" required>
+                    </div>
+                    <button type="submit" class="btn">Sign Up</button>
+                    <p>Already have an account? <a href="#" id="show-login-link">Login</a></p>
+                </form>
+            </section>
+
+            <!-- User Dashboard View -->
+            <section id="user-dashboard-view" class="view" style="display:none;">
+                <h2>User Dashboard</h2>
+                <div class="tabs">
+                    <button class="tab-link active" data-tab="loan-catalog">Loan Catalog</button>
+                    <button class="tab-link" data-tab="loan-calculator">Loan Calculator</button>
+                    <button class="tab-link" data-tab="my-applications">My Applications</button>
+                </div>
+
+                <div id="loan-catalog" class="tab-content active">
+                    <h3>Available Loans</h3>
+                    <div id="loan-catalog-list" class="card-container"></div>
+                </div>
+
+                <div id="loan-calculator" class="tab-content">
+                    <h3>Loan Calculator</h3>
+                    <form id="loan-calculator-form">
+                        <div class="form-group">
+                            <label for="calc-loan-amount">Loan Amount ($)</label>
+                            <input type="number" id="calc-loan-amount" step="100" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="calc-loan-term">Loan Term (Months)</label>
+                            <input type="number" id="calc-loan-term" step="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="calc-interest-rate">Annual Interest Rate (%)</label>
+                            <input type="number" id="calc-interest-rate" step="0.1" required placeholder="e.g., 5 for 5%">
+                        </div>
+                        <button type="submit" class="btn">Calculate</button>
+                    </form>
+                    <div id="calculator-result" class="card" style="margin-top: 1em; display:none;">
+                        <h4>Estimated Monthly Payment: $<span id="monthly-payment">0.00</span></h4>
+                    </div>
+                </div>
+
+                <div id="my-applications" class="tab-content">
+                    <h3>My Loan Applications</h3>
+                    <div id="user-applications-list" class="card-container"></div>
+                </div>
+            </section>
+            
+            <!-- Loan Application Modal (simplified) -->
+            <div id="apply-loan-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close-button">×</span>
+                    <h3>Apply for <span id="modal-loan-name">Loan</span></h3>
+                    <form id="loan-application-form">
+                        <input type="hidden" id="apply-loan-type-id">
+                        <input type="hidden" id="apply-loan-type-name">
+                        <div class="form-group">
+                            <label for="apply-amount">Amount Requested:</label>
+                            <input type="number" id="apply-amount" required>
+                            <small>Min: <span id="modal-min-amount"></span>, Max: <span id="modal-max-amount"></span></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="apply-term">Term (Months):</label>
+                            <input type="number" id="apply-term" required>
+                            <small>Max: <span id="modal-max-term"></span> months</small>
+                        </div>
+                        <button type="submit" class="btn">Submit Application</button>
+                    </form>
+                </div>
+            </div>
+
+
+            <!-- Admin Dashboard View -->
+            <section id="admin-dashboard-view" class="view" style="display:none;">
+                <h2>Admin Dashboard</h2>
+                 <div id="admin-loan-applications-queue" class="card-container">
+                    <h3>Loan Applications Queue</h3>
+                    <!-- Applications will be loaded here -->
+                </div>
+            </section>
+
+        </main>
+
+        <nav id="bottom-nav" style="display:none;">
+            <!-- User Nav -->
+            <div id="user-nav-items" style="display:none;">
+                <button data-view="user-dashboard-view" data-tab="loan-catalog" class="nav-item active">
+                    <span class="material-icons">list_alt</span> Catalog
+                </button>
+                <button data-view="user-dashboard-view" data-tab="loan-calculator" class="nav-item">
+                    <span class="material-icons">calculate</span> Calculator
+                </button>
+                <button data-view="user-dashboard-view" data-tab="my-applications" class="nav-item">
+                    <span class="material-icons">history</span> My Apps
+                </button>
+            </div>
+            <!-- Admin Nav (Simplified for this example, could be different items) -->
+            <div id="admin-nav-items" style="display:none;">
+                 <button data-view="admin-dashboard-view" class="nav-item active">
+                    <span class="material-icons">assignment_turned_in</span> Applications
+                </button>
+                <!-- Add more admin nav items if needed -->
+            </div>
+        </nav>
+        
+        <div id="loading-spinner" style="display:none;" class="spinner-overlay">
+            <div class="spinner"></div>
+        </div>
+        <div id="toast-message" class="toast"></div>
+
+    </div>
+    <script src="client.js"></script>
+</body>
+</html>

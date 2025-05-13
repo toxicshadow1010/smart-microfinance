@@ -1,0 +1,453 @@
+/* style.css */
+:root {
+    --primary-color: #6200EE;
+    --primary-variant-color: #3700B3;
+    --secondary-color: #03DAC6;
+    --background-color: #FFFFFF;
+    --surface-color: #FFFFFF;
+    --error-color: #B00020;
+    --on-primary-color: #FFFFFF;
+    --on-secondary-color: #000000;
+    --on-background-color: #000000;
+    --on-surface-color: #000000;
+    --text-muted-color: #6c757d;
+    --glow-color: var(--secondary-color);
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode {
+    --primary-color: #BB86FC;
+    --primary-variant-color: #3700B3; /* Kept for consistency or can be adjusted */
+    --secondary-color: #03DAC5;
+    --background-color: #121212;
+    --surface-color: #1E1E1E; /* Slightly lighter than background for cards */
+    --error-color: #CF6679;
+    --on-primary-color: #000000;
+    --on-secondary-color: #000000;
+    --on-background-color: #FFFFFF;
+    --on-surface-color: #FFFFFF;
+    --text-muted-color: #adb5bd;
+    --glow-color: #03DAC5;
+    --shadow-color: rgba(255, 255, 255, 0.05);
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    background-color: var(--background-color);
+    color: var(--on-background-color);
+    line-height: 1.6;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+#app-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    max-width: 100%;
+    margin: 0 auto;
+    /* For mobile-app feel, remove max-width and width 100% if header/footer are fixed */
+}
+
+
+header {
+    background-color: var(--primary-color);
+    color: var(--on-primary-color);
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 4px var(--shadow-color);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.5em;
+    flex-grow: 1;
+    text-align: left; /* Adjusted for balance with theme switcher */
+}
+
+header #auth-links a {
+    color: var(--on-primary-color);
+    text-decoration: none;
+    margin-left: 10px;
+}
+
+main {
+    flex-grow: 1;
+    padding: 1rem;
+    padding-bottom: 70px; /* Space for bottom nav */
+    overflow-y: auto; /* Allows content to scroll if it overflows */
+}
+
+.view {
+    padding: 10px;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--on-surface-color);
+}
+
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: var(--surface-color);
+    color: var(--on-surface-color);
+    box-sizing: border-box;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb, 98, 0, 238), 0.25); /* Needs JS to set --primary-color-rgb or use a fixed one */
+}
+body.dark-mode .form-group input:focus, 
+body.dark-mode .form-group select:focus,
+body.dark-mode .form-group textarea:focus {
+     box-shadow: 0 0 5px var(--glow-color);
+}
+
+
+.btn {
+    background-color: var(--primary-color);
+    color: var(--on-primary-color);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    text-transform: uppercase;
+}
+
+.btn:hover {
+    background-color: var(--primary-variant-color);
+    box-shadow: 0 2px 5px var(--shadow-color);
+}
+body.dark-mode .btn:hover {
+    box-shadow: 0 0 8px var(--glow-color);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    color: var(--on-secondary-color);
+}
+.btn-secondary:hover {
+    opacity: 0.9;
+}
+body.dark-mode .btn-secondary:hover {
+    box-shadow: 0 0 8px var(--primary-color);
+}
+
+
+/* Card Styles */
+.card-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+.card {
+    background-color: var(--surface-color);
+    color: var(--on-surface-color);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px var(--shadow-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px var(--shadow-color);
+}
+body.dark-mode .card {
+    border: 1px solid rgba(255,255,255,0.1);
+}
+body.dark-mode .card:hover {
+     box-shadow: 0 0 10px -2px var(--glow-color);
+}
+
+.card h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+}
+.card p {
+    font-size: 0.9em;
+    margin-bottom: 0.5rem;
+}
+.card small {
+    color: var(--text-muted-color);
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--shadow-color);
+}
+.tab-link {
+    padding: 10px 15px;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    color: var(--on-surface-color);
+    font-size: 1em;
+    opacity: 0.7;
+}
+.tab-link.active {
+    border-bottom: 2px solid var(--primary-color);
+    opacity: 1;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s;
+}
+.tab-content.active {
+    display: block;
+}
+
+/* Bottom Navigation */
+#bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--surface-color);
+    box-shadow: 0 -2px 5px var(--shadow-color);
+    display: flex;
+    justify-content: space-around;
+    padding: 5px 0;
+    z-index: 1000;
+}
+#bottom-nav .nav-item {
+    background: none;
+    border: none;
+    color: var(--on-surface-color);
+    opacity: 0.7;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 0.8em;
+}
+#bottom-nav .nav-item .material-icons {
+    font-size: 24px; /* Material Icons default size */
+    margin-bottom: 2px;
+}
+#bottom-nav .nav-item.active {
+    color: var(--primary-color);
+    opacity: 1;
+}
+body.dark-mode #bottom-nav .nav-item.active {
+    text-shadow: 0 0 5px var(--glow-color);
+}
+
+
+/* Theme Switcher */
+.theme-switcher {
+    display: flex;
+    align-items: center;
+    margin-left: auto; /* Pushes to the right */
+}
+.theme-switcher .material-icons {
+    margin-right: 8px;
+    cursor: default; /* If the icon itself is not clickable */
+}
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px; /* Adjusted width */
+    height: 24px; /* Adjusted height */
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px; /* Adjusted size */
+    width: 18px;  /* Adjusted size */
+    left: 3px;    /* Adjusted position */
+    bottom: 3px;  /* Adjusted position */
+    background-color: white;
+    transition: .4s;
+}
+input:checked + .slider {
+    background-color: var(--secondary-color);
+}
+input:focus + .slider {
+    box-shadow: 0 0 1px var(--secondary-color);
+}
+body.dark-mode input:focus + .slider {
+     box-shadow: 0 0 5px var(--glow-color);
+}
+input:checked + .slider:before {
+    transform: translateX(26px); /* Adjusted transform distance */
+}
+.slider.round {
+    border-radius: 24px; /* Adjusted for new height */
+}
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* Modal */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1001; 
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.4);
+    animation: fadeInModal 0.3s;
+}
+@keyframes fadeInModal { from {opacity: 0;} to {opacity: 1;} }
+
+.modal-content {
+    background-color: var(--surface-color);
+    color: var(--on-surface-color);
+    margin: 15% auto; 
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 500px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    position: relative;
+    animation: slideInModal 0.3s;
+}
+@keyframes slideInModal { from {transform: translateY(-50px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
+
+
+.close-button {
+    color: var(--text-muted-color);
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+.close-button:hover,
+.close-button:focus {
+    color: var(--on-surface-color);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Helper classes */
+.text-danger { color: var(--error-color); }
+.text-success { color: var(--secondary-color); } /* Or a dedicated success color */
+.mt-1 { margin-top: 1rem; }
+
+/* Spinner */
+.spinner-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+.spinner {
+    border: 5px solid var(--surface-color); /* Light grey */
+    border-top: 5px solid var(--primary-color); /* Blue */
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+body.dark-mode .spinner {
+    border: 5px solid var(--surface-color);
+    border-top: 5px solid var(--glow-color);
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Toast Messages */
+.toast {
+    visibility: hidden;
+    min-width: 250px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 4px;
+    padding: 16px;
+    position: fixed;
+    z-index: 10000;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%);
+    font-size: 17px;
+    opacity: 0;
+    transition: opacity 0.5s, visibility 0.5s, bottom 0.5s;
+}
+.toast.show {
+    visibility: visible;
+    opacity: 1;
+    bottom: 50px; /* Slide up */
+}
+.toast.success { background-color: var(--secondary-color); color: var(--on-secondary-color); }
+.toast.error { background-color: var(--error-color); color: var(--on-primary-color); } /* Assuming error on primary is white */
+
+body.dark-mode .toast.success { background-color: var(--secondary-color); color: var(--on-secondary-color); }
+body.dark-mode .toast.error { background-color: var(--error-color); color: var(--on-primary-color); }
+
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+    #app-container {
+        max-width: 960px; /* Or your preferred desktop width */
+    }
+    main {
+        padding-bottom: 1rem; /* No bottom nav on desktop typically */
+    }
+    #bottom-nav {
+        display: none; /* Hide bottom nav on larger screens */
+    }
+    /* Could add a sidebar nav for desktop here */
+}
