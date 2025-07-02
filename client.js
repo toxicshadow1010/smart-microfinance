@@ -1,7 +1,7 @@
 // client.js
 document.addEventListener('DOMContentLoaded', () => {
     // IMPORTANT: Replace with your deployed Google Apps Script Web App URL
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwGvAAr3BRmHokLhSWJcnFmYJj_iSbl6A9bE125lo7xPHx9ns6W3tLwDB2_5vp7DCM/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwbHfobJUu1a4T3hLPCjd9wBako4im5skybfFbcb3HiydvnKTUzpOaLBd7UFfXUfUo/exec';
 
     // DOM Elements
     const views = document.querySelectorAll('.view');
@@ -50,8 +50,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingSpinner = document.getElementById('loading-spinner');
     const toastMessage = document.getElementById('toast-message');
 
+    const userProfileForm = document.getElementById('user-profile-form');
+    const profileFullNameInput = document.getElementById('profile-fullname');
+    const profilePhoneInput = document.getElementById('profile-phone');
+    const profileAddressInput = document.getElementById('profile-address');
+    const profileOccupationInput = document.getElementById('profile-occupation');
+    const profileMonthlyIncomeInput = document.getElementById('profile-monthly-income');
+    const profileBankAccountInput = document.getElementById('profile-bank-account');
+
+    const repayLoanForm = document.getElementById('repay-loan-form');
+    const activeLoanInfoDiv = document.getElementById('active-loan-info');
+    const repaymentAmountInput = document.getElementById('repayment-amount');
+
     let currentUser = null; // { userId, email, role }
     let currentLoanTypes = [];
+    let userActiveLoan = null;
 
 
     // --- Utility Functions ---
@@ -160,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     signupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const fullName = document.getElementById('signup-fullname').value;
         const email = document.getElementById('signup-email').value;
         const password = document.getElementById('signup-password').value;
         const confirmPassword = document.getElementById('signup-confirm-password').value;
@@ -173,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const result = await apiCall('signup', 'POST', { action: 'signup', email, password });
+        const result = await apiCall('signup', 'POST', { action: 'signup', email, password, fullName });
         if (result.status === 'success') {
             showToast(result.message, 'success');
             loginUser(result); // Automatically log in the new user
@@ -240,6 +254,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 adminNavItems.style.display = 'none';
                 loadLoanTypes();
                 loadUserApplications();
+                loadUserProfile();
+                loadUserActiveLoan(); // Load active loan for repayment
                 switchUserTab('loan-catalog'); // Default to loan catalog
             }
         } else {
@@ -458,29 +474,105 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Add admin create loan modal
+    let adminCreateLoanModal = document.createElement('div');
+    adminCreateLoanModal.id = 'admin-create-loan-modal';
+    adminCreateLoanModal.className = 'modal';
+    adminCreateLoanModal.style.display = 'none';
+    adminCreateLoanModal.innerHTML = `
+      <div class="modal-content">
+        <span class="close-button" id="close-admin-create-loan-modal">×</span>
+        <h3>Admin: Create Loan for User</h3>
+        <form id="admin-create-loan-form">
+          <input type="hidden" id="admin-create-loan-user-id">
+          <input type="hidden" id="admin-create-loan-user-email">
+          <div class="form-group">
+            <label for="admin-create-loan-name">Loan Name</label>
+            <input type="text" id="admin-create-loan-name" required>
+          </div>
+          <div class="form-group">
+            <label for="admin-create-loan-type-id">Loan Type ID</label>
+            <input type="text" id="admin-create-loan-type-id" required>
+          </div>
+          <div class="form-group">
+            <label for="admin-create-loan-amount">Amount</label>
+            <input type="number" id="admin-create-loan-amount" required>
+          </div>
+          <div class="form-group">
+            <label for="admin-create-loan-term">Term (months)</label>
+            <input type="number" id="admin-create-loan-term" required>
+          </div>
+          <button type="submit" class="btn">Create Loan (Override)</button>
+        </form>
+      </div>
+    `;
+    document.body.appendChild(adminCreateLoanModal);
+
+    const adminCreateLoanForm = document.getElementById('admin-create-loan-form');
+    const closeAdminCreateLoanModal = document.getElementById('close-admin-create-loan-modal');
+
+    closeAdminCreateLoanModal.onclick = () => {
+      adminCreateLoanModal.style.display = 'none';
+    };
+    window.onclick = (event) => {
+      if (event.target === adminCreateLoanModal) {
+        adminCreateLoanModal.style.display = 'none';
+      }
+    };
+
+    adminCreateLoanForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const userId = document.getElementById('admin-create-loan-user-id').value;
+      const userEmail = document.getElementById('admin-create-loan-user-email').value;
+      const loanName = document.getElementById('admin-create-loan-name').value;
+      const loanTypeId = document.getElementById('admin-create-loan-type-id').value;
+      const amount = document.getElementById('admin-create-loan-amount').value;
+      const term = document.getElementById('admin-create-loan-term').value;
+      const result = await apiCall('submitApplication', 'POST', {
+        action: 'submitApplication',
+        userId,
+        userEmail,
+        loanTypeId,
+        loanName,
+        amount,
+        term,
+        adminOverride: true,
+        adminEmail: currentUser.email
+      });
+      if (result.status === 'success') {
+        showToast('Loan created successfully.', 'success');
+        adminCreateLoanModal.style.display = 'none';
+        loadAdminApplications();
+      } else {
+        showToast(result.message || 'Failed to create loan.', 'error');
+      }
+    };
+
     async function loadAdminApplications() {
         if (!currentUser || currentUser.role !== 'admin') return;
-
         const result = await apiCall('getAdminApplications', 'GET', null, { adminEmail: currentUser.email });
-        adminLoanApplicationsQueue.innerHTML = '<h3>Loan Applications Queue</h3>'; // Reset and add title
-        
+        adminLoanApplicationsQueue.innerHTML = '<h3>Loan Applications Queue</h3>';
         if (result.status === 'success' && result.applications) {
             if (result.applications.length === 0) {
                 adminLoanApplicationsQueue.innerHTML += '<p>No pending applications.</p>';
                 return;
             }
-            result.applications.sort((a,b) => new Date(b.submissionDate) - new Date(a.submissionDate)); // Show newest first
-            
+            result.applications.sort((a,b) => new Date(b.submissionDate) - new Date(a.submissionDate));
             result.applications.forEach(app => {
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
                     <h4>Application ID: ${app.applicationId}</h4>
                     <p>User: ${app.userEmail}</p>
+                    <p>Full Name: ${app.fullName || ''}</p>
+                    <p>Phone: ${app.phoneNumber || ''}</p>
+                    <p>Bank Account: ${app.bankAccount || ''}</p>
                     <p>Loan: ${app.loanName || 'N/A'}</p>
                     <p>Amount: $${app.amountRequested}, Term: ${app.termMonths} months</p>
+                    <p><strong>Total Loans Taken:</strong> ${typeof app.totalLoansCount !== 'undefined' ? app.totalLoansCount : '<em>Unknown</em>'}</p>
                     <p>Submitted: ${new Date(app.submissionDate).toLocaleDateString()}</p>
                     <p>Current Status: <strong class="status-${app.status.toLowerCase()}">${app.status}</strong></p>
+                    <button class="btn btn-secondary btn-admin-create-loan" data-user-id="${app.userProfile.userId}" data-user-email="${app.userEmail}">Create New Loan (Override)</button>
                     ${app.adminNotes ? `<p>Previous Notes: ${app.adminNotes}</p>`: ''}
                     <div class="form-group">
                         <label for="admin-notes-${app.applicationId}">Admin Notes:</label>
@@ -494,12 +586,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 adminLoanApplicationsQueue.appendChild(card);
             });
-            
             // Add event listeners for new buttons
             adminLoanApplicationsQueue.querySelectorAll('.btn-approve, .btn-hold, .btn-reject').forEach(button => {
                 button.addEventListener('click', handleAdminActionClick);
             });
-
+            // Add event listeners for admin create loan buttons
+            adminLoanApplicationsQueue.querySelectorAll('.btn-admin-create-loan').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const userId = button.getAttribute('data-user-id');
+                    const userEmail = button.getAttribute('data-user-email');
+                    document.getElementById('admin-create-loan-user-id').value = userId;
+                    document.getElementById('admin-create-loan-user-email').value = userEmail;
+                    adminCreateLoanModal.style.display = 'block';
+                });
+            });
         } else {
             adminLoanApplicationsQueue.innerHTML += '<p>Could not load applications.</p>';
         }
@@ -545,6 +645,92 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Load user profile data into the form
+    async function loadUserProfile() {
+        if (!currentUser) return;
+        const result = await apiCall('getUserProfile', 'GET', null, { userEmail: currentUser.email });
+        if (result.status === 'success' && result.profile) {
+            const p = result.profile;
+            profileFullNameInput.value = p.fullName || '';
+            profilePhoneInput.value = p.phone || '';
+            profileAddressInput.value = p.address || '';
+            profileOccupationInput.value = p.occupation || '';
+            profileMonthlyIncomeInput.value = p.monthlyIncome || '';
+            profileBankAccountInput.value = p.bankAccount || '';
+        }
+    }
+
+    userProfileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentUser) return;
+        const data = {
+            action: 'updateUserProfile',
+            userEmail: currentUser.email,
+            fullName: profileFullNameInput.value,
+            phone: profilePhoneInput.value,
+            address: profileAddressInput.value,
+            occupation: profileOccupationInput.value,
+            monthlyIncome: profileMonthlyIncomeInput.value,
+            bankAccount: profileBankAccountInput.value
+        };
+        const result = await apiCall('updateUserProfile', 'POST', data);
+        if (result.status === 'success') {
+            showToast('Profile updated successfully.', 'success');
+        } else {
+            showToast(result.message || 'Profile update failed.', 'error');
+        }
+    });
+
+    // Load user's active loan for repayment
+    async function loadUserActiveLoan() {
+        if (!currentUser) return;
+        const result = await apiCall('getUserLoanHistory', 'GET', null, { userEmail: currentUser.email });
+        if (result.status === 'success' && result.history) {
+            const activeLoan = result.history.find(l => l.status === 'Active');
+            userActiveLoan = activeLoan || null;
+            if (activeLoan) {
+                activeLoanInfoDiv.innerHTML = `
+                    <p><strong>Loan ID:</strong> ${activeLoan.applicationId}</p>
+                    <p><strong>Amount:</strong> $${activeLoan.loanAmount}</p>
+                    <p><strong>Total Paid:</strong> $${activeLoan.totalPaid}</p>
+                    <p><strong>Outstanding:</strong> $${(parseFloat(activeLoan.loanAmount) - parseFloat(activeLoan.totalPaid)).toFixed(2)}</p>
+                    <p><strong>Status:</strong> ${activeLoan.status}</p>
+                `;
+                repaymentAmountInput.disabled = false;
+            } else {
+                activeLoanInfoDiv.innerHTML = '<p>No active loan. You can apply for a new loan.</p>';
+                repaymentAmountInput.disabled = true;
+            }
+        } else {
+            activeLoanInfoDiv.innerHTML = '<p>Could not load loan information.</p>';
+            repaymentAmountInput.disabled = true;
+        }
+    }
+
+    repayLoanForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentUser || !userActiveLoan) return;
+        const paymentAmount = parseFloat(repaymentAmountInput.value);
+        if (isNaN(paymentAmount) || paymentAmount <= 0) {
+            showToast('Enter a valid repayment amount.', 'error');
+            return;
+        }
+        const result = await apiCall('submitLoanRepayment', 'POST', {
+            action: 'submitLoanRepayment',
+            userEmail: currentUser.email,
+            applicationId: userActiveLoan.applicationId,
+            paymentAmount: paymentAmount,
+            adminEmail: currentUser.email // For user, this can be their own email or a system value
+        });
+        if (result.status === 'success') {
+            showToast('Repayment submitted successfully.', 'success');
+            repaymentAmountInput.value = '';
+            await loadUserActiveLoan();
+            await loadUserApplications();
+        } else {
+            showToast(result.message || 'Repayment failed.', 'error');
+        }
+    });
 
     // --- Initial Load ---
     loadTheme();
