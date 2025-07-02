@@ -64,6 +64,10 @@
                 <h2>Sign Up</h2>
                 <form id="signup-form">
                     <div class="form-group">
+                        <label for="signup-fullname">Full Name</label>
+                        <input type="text" id="signup-fullname" required>
+                    </div>
+                    <div class="form-group">
                         <label for="signup-email">Email</label>
                         <input type="email" id="signup-email" required>
                     </div>
@@ -72,7 +76,7 @@
                         <input type="password" id="signup-password" required>
                         <small>Password must be at least 8 characters.</small>
                     </div>
-                     <div class="form-group">
+                    <div class="form-group">
                         <label for="signup-confirm-password">Confirm Password</label>
                         <input type="password" id="signup-confirm-password" required>
                     </div>
@@ -89,6 +93,47 @@
                     <button class="tab-link" data-tab="loan-calculator">Loan Calculator</button>
                     <button class="tab-link" data-tab="my-applications">My Applications</button>
                 </div>
+
+                <!-- User Profile Update Form -->
+                <form id="user-profile-form" class="card" style="margin: 1em 0;">
+                    <h3>Update Profile</h3>
+                    <div class="form-group">
+                        <label for="profile-fullname">Full Name</label>
+                        <input type="text" id="profile-fullname" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-phone">Phone</label>
+                        <input type="text" id="profile-phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-address">Address</label>
+                        <input type="text" id="profile-address">
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-occupation">Occupation</label>
+                        <input type="text" id="profile-occupation">
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-monthly-income">Monthly Income</label>
+                        <input type="number" id="profile-monthly-income" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-bank-account">Bank Account</label>
+                        <input type="text" id="profile-bank-account" placeholder="Enter your bank account number">
+                    </div>
+                    <button type="submit" class="btn">Update Profile</button>
+                </form>
+
+                <!-- Repay Loan Form (User Dashboard) -->
+                <form id="repay-loan-form" class="card" style="margin: 1em 0;">
+                    <h3>Repay Active Loan</h3>
+                    <div id="active-loan-info"></div>
+                    <div class="form-group">
+                        <label for="repayment-amount">Repayment Amount</label>
+                        <input type="number" id="repayment-amount" min="1" step="any" required>
+                    </div>
+                    <button type="submit" class="btn">Submit Repayment</button>
+                </form>
 
                 <div id="loan-catalog" class="tab-content active">
                     <h3>Available Loans</h3>
